@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Lotus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Heart, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Auth = () => {
@@ -85,7 +85,7 @@ const Auth = () => {
         <div className="text-center mb-8">
           <div className="lotus-glow w-16 h-16 mx-auto mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-zen-blue to-zen-sage rounded-full mx-auto flex items-center justify-center">
-              <Lotus className="w-6 h-6 text-white" />
+              <Heart className="w-6 h-6 text-white" />
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-800 font-thai mb-2">

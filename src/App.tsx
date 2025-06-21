@@ -14,7 +14,6 @@ import Privacy from '@/pages/Privacy';
 import Layout from '@/components/Layout';
 import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ProtectedRoute } from '@/components/security/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -32,45 +31,35 @@ function App() {
               {/* Landing page */}
               <Route path="/" element={<Index />} />
               
-              {/* Protected app routes */}
+              {/* Protected app routes - Layout handles authentication */}
               <Route path="/app/home" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Home />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <Home />
+                </Layout>
               } />
               
               <Route path="/app/chat" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <AiChat />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <AiChat />
+                </Layout>
               } />
               
               <Route path="/app/content" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Content />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <Content />
+                </Layout>
               } />
               
               <Route path="/app/therapist" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Therapist />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <Therapist />
+                </Layout>
               } />
               
               <Route path="/app/profile" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Profile />
-                  </Layout>
-                </ProtectedRoute>
+                <Layout>
+                  <Profile />
+                </Layout>
               } />
               
               <Route path="*" element={<NotFound />} />
