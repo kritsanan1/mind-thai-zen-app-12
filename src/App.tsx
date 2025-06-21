@@ -31,36 +31,14 @@ function App() {
               {/* Landing page */}
               <Route path="/" element={<Index />} />
               
-              {/* Protected app routes - Layout handles authentication */}
-              <Route path="/app/home" element={
-                <Layout>
-                  <Home />
-                </Layout>
-              } />
-              
-              <Route path="/app/chat" element={
-                <Layout>
-                  <AiChat />
-                </Layout>
-              } />
-              
-              <Route path="/app/content" element={
-                <Layout>
-                  <Content />
-                </Layout>
-              } />
-              
-              <Route path="/app/therapist" element={
-                <Layout>
-                  <Therapist />
-                </Layout>
-              } />
-              
-              <Route path="/app/profile" element={
-                <Layout>
-                  <Profile />
-                </Layout>
-              } />
+              {/* Protected app routes with Layout wrapper */}
+              <Route path="/app" element={<Layout />}>
+                <Route path="home" element={<Home />} />
+                <Route path="chat" element={<AiChat />} />
+                <Route path="content" element={<Content />} />
+                <Route path="therapist" element={<Therapist />} />
+                <Route path="profile" element={<Profile />} />
+              </Route>
               
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,149 +1,130 @@
 
-import { useCallback } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
+type Tables = Database['public']['Tables'];
+
 export const useSecureDatabase = () => {
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const secureInsert = useCallback(async (
-    tableName: string, 
-    data: any
-  ) => {
-    if (!user) {
-      throw new Error('User must be authenticated');
+  const secureQuery = async <T extends keyof Tables>(
+    tableName: T,
+    options?: {
+      select?: string;
+      filters?: Record<string, any>;
+      orderBy?: { column: string; ascending?: boolean };
+      limit?: number;
     }
+  ) => {
+    setLoading(true);
+    setError(null);
 
     try {
-      // Ensure user_id is set correctly
-      const dataWithUserId = {
-        ...data,
-        user_id: user.id
-      };
+      let query = supabase.from(tableName).select(options?.select || '*');
 
-      console.log(`Inserting into ${tableName}:`, dataWithUserId);
-
-      const { data: result, error } = await supabase
-        .from(tableName)
-        .insert(dataWithUserId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error(`Database insert error for ${tableName}:`, error);
-        throw new Error(`Failed to save data: ${error.message}`);
-      }
-
-      return result;
-    } catch (error: any) {
-      console.error(`Secure insert error for ${tableName}:`, error);
-      toast.error(error.message || 'Database operation failed');
-      throw error;
-    }
-  }, [user]);
-
-  const secureUpdate = useCallback(async (
-    tableName: string,
-    id: string,
-    data: any
-  ) => {
-    if (!user) {
-      throw new Error('User must be authenticated');
-    }
-
-    try {
-      console.log(`Updating ${tableName} with id ${id}:`, data);
-
-      const { data: result, error } = await supabase
-        .from(tableName)
-        .update(data)
-        .eq('id', id)
-        .eq('user_id', user.id) // Ensure user can only update their own data
-        .select()
-        .single();
-
-      if (error) {
-        console.error(`Database update error for ${tableName}:`, error);
-        throw new Error(`Failed to update data: ${error.message}`);
-      }
-
-      return result;
-    } catch (error: any) {
-      console.error(`Secure update error for ${tableName}:`, error);
-      toast.error(error.message || 'Database operation failed');
-      throw error;
-    }
-  }, [user]);
-
-  const secureSelect = useCallback(async (
-    tableName: string,
-    columns?: string,
-    filters?: Record<string, any>
-  ) => {
-    if (!user) {
-      throw new Error('User must be authenticated');
-    }
-
-    try {
-      let query = supabase
-        .from(tableName)
-        .select(columns || '*')
-        .eq('user_id', user.id); // Always filter by user_id
-
-      // Apply additional filters if provided
-      if (filters) {
-        Object.entries(filters).forEach(([key, value]) => {
+      if (options?.filters) {
+        Object.entries(options.filters).forEach(([key, value]) => {
           query = query.eq(key, value);
         });
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error(`Database select error for ${tableName}:`, error);
-        throw new Error(`Failed to fetch data: ${error.message}`);
+      if (options?.orderBy) {
+        query = query.order(options.orderBy.column, { 
+          ascending: options.orderBy.ascending ?? true 
+        });
       }
 
-      return data;
-    } catch (error: any) {
-      console.error(`Secure select error for ${tableName}:`, error);
-      toast.error(error.message || 'Database operation failed');
-      throw error;
+      if (options?.limit) {
+        query = query.limit(options.limit);
+      }
+
+      const { data, error: queryError } = await query;
+
+      if (queryError) {
+        throw queryError;
+      }
+
+      return { data, error: null };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Database query failed';
+      setError(errorMessage);
+      toast.error(`Query Error: ${errorMessage}`);
+      return { data: null, error: errorMessage };
+    } finally {
+      setLoading(false);
     }
-  }, [user]);
+  };
 
-  // Specific secure operations for common actions
-  const saveChatMessage = useCallback(async (sessionId: string, message: string, isFromUser: boolean) => {
-    return secureInsert('ai_chat_messages', {
-      session_id: sessionId,
-      message_text: message,
-      is_from_user: isFromUser,
-      timestamp: new Date().toISOString()
-    });
-  }, [secureInsert]);
+  const secureInsert = async <T extends keyof Tables>(
+    tableName: T,
+    data: Tables[T]['Insert']
+  ) => {
+    setLoading(true);
+    setError(null);
 
-  const saveMoodEntry = useCallback(async (moodData: any) => {
-    return secureInsert('mood_entries', moodData);
-  }, [secureInsert]);
+    try {
+      const { data: insertedData, error: insertError } = await supabase
+        .from(tableName)
+        .insert(data)
+        .select()
+        .single();
 
-  const updateProfile = useCallback(async (profileData: any) => {
-    if (!user) throw new Error('User must be authenticated');
-    
-    return secureUpdate('profiles', user.id, profileData);
-  }, [secureUpdate, user]);
+      if (insertError) {
+        throw insertError;
+      }
 
-  const saveFeedback = useCallback(async (feedbackData: any) => {
-    return secureInsert('feedback', feedbackData);
-  }, [secureInsert]);
+      toast.success('Data saved successfully');
+      return { data: insertedData, error: null };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Insert operation failed';
+      setError(errorMessage);
+      toast.error(`Insert Error: ${errorMessage}`);
+      return { data: null, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const secureUpdate = async <T extends keyof Tables>(
+    tableName: T,
+    id: string,
+    updates: Tables[T]['Update']
+  ) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: updatedData, error: updateError } = await supabase
+        .from(tableName)
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      toast.success('Data updated successfully');
+      return { data: updatedData, error: null };
+    } catch (err: any) {
+      const errorMessage = err.message || 'Update operation failed';
+      setError(errorMessage);
+      toast.error(`Update Error: ${errorMessage}`);
+      return { data: null, error: errorMessage };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
+    loading,
+    error,
+    secureQuery,
     secureInsert,
     secureUpdate,
-    secureSelect,
-    saveChatMessage,
-    saveMoodEntry,
-    updateProfile,
-    saveFeedback
   };
 };
