@@ -1,295 +1,263 @@
 
-import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from 'sonner';
-import { Tables, TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-interface DatabaseError {
-  message: string;
-  code?: string;
+// Type aliases for better readability
+type TableName = keyof Database['public']['Tables'];
+type TableRow<T extends TableName> = Database['public']['Tables'][T]['Row'];
+type TableInsert<T extends TableName> = Database['public']['Tables'][T]['Insert'];
+type TableUpdate<T extends TableName> = Database['public']['Tables'][T]['Update'];
+
+export interface SecureDatabaseOptions {
+  enableEncryption?: boolean;
+  enableAuditLog?: boolean;
+  enableRateLimit?: boolean;
 }
 
-interface DatabaseResult<T> {
+export interface DatabaseResult<T = any> {
   data: T | null;
-  error: DatabaseError | null;
+  error: Error | null;
+  loading: boolean;
 }
 
-interface DatabaseListResult<T> {
-  data: T[] | null;
-  error: DatabaseError | null;
-  count: number | null;
+export interface SecureDatabaseHook {
+  // Generic CRUD operations
+  select: <T extends TableName>(
+    table: T,
+    options?: {
+      columns?: string;
+      filters?: Record<string, any>;
+      orderBy?: string;
+      limit?: number;
+    }
+  ) => Promise<DatabaseResult<TableRow<T>[]>>;
+
+  insert: <T extends TableName>(
+    table: T,
+    values: TableInsert<T>
+  ) => Promise<DatabaseResult<TableRow<T>>>;
+
+  update: <T extends TableName>(
+    table: T,
+    values: Partial<TableUpdate<T>>,
+    filters: Record<string, any>
+  ) => Promise<DatabaseResult<TableRow<T>>>;
+
+  delete: <T extends TableName>(
+    table: T,
+    filters: Record<string, any>
+  ) => Promise<DatabaseResult<void>>;
+
+  // User-specific operations (for RLS-enabled tables)
+  selectUserData: <T extends TableName>(
+    table: T,
+    options?: {
+      columns?: string;
+      filters?: Record<string, any>;
+      orderBy?: string;
+      limit?: number;
+    }
+  ) => Promise<DatabaseResult<TableRow<T>[]>>;
+
+  insertUserData: <T extends TableName>(
+    table: T,
+    values: TableInsert<T>
+  ) => Promise<DatabaseResult<TableRow<T>>>;
 }
 
-export const useSecureDatabase = () => {
+export const useSecureDatabase = (options: SecureDatabaseOptions = {}): SecureDatabaseHook => {
   const { user } = useAuth();
 
-  const handleError = useCallback((error: any): DatabaseError => {
-    console.error('Database operation failed:', error);
-    
-    if (error?.code === 'PGRST116') {
-      return { message: 'No data found', code: error.code };
-    }
-    
-    if (error?.message?.includes('RLS')) {
-      return { message: 'Access denied: insufficient permissions', code: 'RLS_ERROR' };
-    }
-    
-    return { message: error?.message || 'Database operation failed', code: error?.code };
-  }, []);
-
-  const validateUser = useCallback((): boolean => {
-    if (!user) {
-      toast.error('You must be logged in to perform this action');
-      return false;
-    }
-    return true;
-  }, [user]);
-
-  // Generic select function
-  const select = useCallback(async <T extends keyof Tables>(
+  // Generic select operation
+  const select = async <T extends TableName>(
     table: T,
-    options?: {
+    selectOptions?: {
       columns?: string;
       filters?: Record<string, any>;
-      orderBy?: { column: string; ascending?: boolean };
+      orderBy?: string;
       limit?: number;
-      single?: boolean;
     }
-  ): Promise<DatabaseResult<Tables[T]['Row']> | DatabaseListResult<Tables[T]['Row']>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' }, count: null };
-    }
-
+  ): Promise<DatabaseResult<TableRow<T>[]>> => {
     try {
-      let query = supabase.from(table).select(options?.columns || '*', { count: 'exact' });
+      let query = supabase.from(table).select(selectOptions?.columns || '*');
 
       // Apply filters
-      if (options?.filters) {
-        Object.entries(options.filters).forEach(([key, value]) => {
+      if (selectOptions?.filters) {
+        Object.entries(selectOptions.filters).forEach(([key, value]) => {
           query = query.eq(key, value);
         });
       }
 
       // Apply ordering
-      if (options?.orderBy) {
-        query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
+      if (selectOptions?.orderBy) {
+        query = query.order(selectOptions.orderBy);
       }
 
       // Apply limit
-      if (options?.limit) {
-        query = query.limit(options.limit);
+      if (selectOptions?.limit) {
+        query = query.limit(selectOptions.limit);
       }
 
-      const { data, error, count } = await query;
+      const { data, error } = await query;
 
       if (error) {
-        return { data: null, error: handleError(error), count: null };
+        console.error(`Database select error for table ${table}:`, error);
+        return { data: null, error: new Error(error.message), loading: false };
       }
 
-      if (options?.single) {
-        return { data: data?.[0] || null, error: null };
-      }
-
-      return { data: data || [], error: null, count };
+      return { data: data as TableRow<T>[], error: null, loading: false };
     } catch (error) {
-      return { data: null, error: handleError(error), count: null };
+      console.error('Unexpected error in select operation:', error);
+      return { 
+        data: null, 
+        error: error instanceof Error ? error : new Error('Unknown error'), 
+        loading: false 
+      };
     }
-  }, [validateUser, handleError]);
+  };
 
-  // Specific insert functions for each table to avoid type issues
-  const insertRecord = useCallback(async <T extends keyof Tables>(
+  // Generic insert operation
+  const insert = async <T extends TableName>(
     table: T,
-    values: any // Using any to avoid complex type issues for now
-  ): Promise<DatabaseResult<Tables[T]['Row']>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' } };
-    }
-
+    values: TableInsert<T>
+  ): Promise<DatabaseResult<TableRow<T>>> => {
     try {
       const { data, error } = await supabase
         .from(table)
-        .insert(values)
+        .insert(values as any)
         .select()
         .single();
 
       if (error) {
-        return { data: null, error: handleError(error) };
+        console.error(`Database insert error for table ${table}:`, error);
+        return { data: null, error: new Error(error.message), loading: false };
       }
 
-      return { data, error: null };
+      return { data: data as TableRow<T>, error: null, loading: false };
     } catch (error) {
-      return { data: null, error: handleError(error) };
+      console.error('Unexpected error in insert operation:', error);
+      return { 
+        data: null, 
+        error: error instanceof Error ? error : new Error('Unknown error'), 
+        loading: false 
+      };
     }
-  }, [validateUser, handleError]);
+  };
 
-  const updateRecord = useCallback(async <T extends keyof Tables>(
+  // Generic update operation
+  const update = async <T extends TableName>(
     table: T,
-    id: string,
-    values: any // Using any to avoid complex type issues for now
-  ): Promise<DatabaseResult<Tables[T]['Row']>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' } };
-    }
-
+    values: Partial<TableUpdate<T>>,
+    filters: Record<string, any>
+  ): Promise<DatabaseResult<TableRow<T>>> => {
     try {
-      const { data, error } = await supabase
-        .from(table)
-        .update(values)
-        .eq('id', id)
-        .select()
-        .single();
+      let query = supabase.from(table).update(values as any);
+
+      // Apply filters
+      Object.entries(filters).forEach(([key, value]) => {
+        query = query.eq(key, value);
+      });
+
+      const { data, error } = await query.select().single();
 
       if (error) {
-        return { data: null, error: handleError(error) };
+        console.error(`Database update error for table ${table}:`, error);
+        return { data: null, error: new Error(error.message), loading: false };
       }
 
-      return { data, error: null };
+      return { data: data as TableRow<T>, error: null, loading: false };
     } catch (error) {
-      return { data: null, error: handleError(error) };
+      console.error('Unexpected error in update operation:', error);
+      return { 
+        data: null, 
+        error: error instanceof Error ? error : new Error('Unknown error'), 
+        loading: false 
+      };
     }
-  }, [validateUser, handleError]);
+  };
 
-  const deleteRecord = useCallback(async <T extends keyof Tables>(
+  // Generic delete operation
+  const deleteRecord = async <T extends TableName>(
     table: T,
-    id: string
-  ): Promise<DatabaseResult<null>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' } };
-    }
-
+    filters: Record<string, any>
+  ): Promise<DatabaseResult<void>> => {
     try {
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .eq('id', id);
+      let query = supabase.from(table).delete();
+
+      // Apply filters
+      Object.entries(filters).forEach(([key, value]) => {
+        query = query.eq(key, value);
+      });
+
+      const { error } = await query;
 
       if (error) {
-        return { data: null, error: handleError(error) };
+        console.error(`Database delete error for table ${table}:`, error);
+        return { data: null, error: new Error(error.message), loading: false };
       }
 
-      return { data: null, error: null };
+      return { data: null, error: null, loading: false };
     } catch (error) {
-      return { data: null, error: handleError(error) };
+      console.error('Unexpected error in delete operation:', error);
+      return { 
+        data: null, 
+        error: error instanceof Error ? error : new Error('Unknown error'), 
+        loading: false 
+      };
     }
-  }, [validateUser, handleError]);
+  };
 
-  // Batch operations
-  const insertBatch = useCallback(async <T extends keyof Tables>(
+  // User-specific select (automatically filters by user_id)
+  const selectUserData = async <T extends TableName>(
     table: T,
-    values: any[] // Using any to avoid complex type issues for now
-  ): Promise<DatabaseListResult<Tables[T]['Row']>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' }, count: null };
-    }
-
-    try {
-      const { data, error, count } = await supabase
-        .from(table)
-        .insert(values)
-        .select();
-
-      if (error) {
-        return { data: null, error: handleError(error), count: null };
-      }
-
-      return { data: data || [], error: null, count };
-    } catch (error) {
-      return { data: null, error: handleError(error), count: null };
-    }
-  }, [validateUser, handleError]);
-
-  // User-specific operations (for RLS)
-  const selectUserData = useCallback(async <T extends keyof Tables>(
-    table: T,
-    options?: {
+    selectOptions?: {
       columns?: string;
       filters?: Record<string, any>;
-      orderBy?: { column: string; ascending?: boolean };
+      orderBy?: string;
       limit?: number;
     }
-  ): Promise<DatabaseListResult<Tables[T]['Row']>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' }, count: null };
+  ): Promise<DatabaseResult<TableRow<T>[]>> => {
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated'), loading: false };
     }
 
-    try {
-      let query = supabase.from(table).select(options?.columns || '*', { count: 'exact' });
+    const userFilters = {
+      user_id: user.id,
+      ...(selectOptions?.filters || {})
+    };
 
-      // Always filter by user_id for user-specific data
-      query = query.eq('user_id', user!.id);
+    return select(table, {
+      ...selectOptions,
+      filters: userFilters
+    });
+  };
 
-      // Apply additional filters
-      if (options?.filters) {
-        Object.entries(options.filters).forEach(([key, value]) => {
-          query = query.eq(key, value);
-        });
-      }
-
-      // Apply ordering
-      if (options?.orderBy) {
-        query = query.order(options.orderBy.column, { ascending: options.orderBy.ascending ?? true });
-      }
-
-      // Apply limit
-      if (options?.limit) {
-        query = query.limit(options.limit);
-      }
-
-      const { data, error, count } = await query;
-
-      if (error) {
-        return { data: null, error: handleError(error), count: null };
-      }
-
-      return { data: data || [], error: null, count };
-    } catch (error) {
-      return { data: null, error: handleError(error), count: null };
-    }
-  }, [validateUser, handleError, user]);
-
-  const insertUserData = useCallback(async <T extends keyof Tables>(
+  // User-specific insert (automatically adds user_id)
+  const insertUserData = async <T extends TableName>(
     table: T,
-    values: any // Using any to avoid complex type issues for now
-  ): Promise<DatabaseResult<Tables[T]['Row']>> => {
-    if (!validateUser()) {
-      return { data: null, error: { message: 'Authentication required' } };
+    values: TableInsert<T>
+  ): Promise<DatabaseResult<TableRow<T>>> => {
+    if (!user) {
+      return { data: null, error: new Error('User not authenticated'), loading: false };
     }
 
-    try {
-      // Ensure user_id is set
-      const dataWithUserId = { ...values, user_id: user!.id };
+    const userValues = {
+      ...values,
+      user_id: user.id
+    } as TableInsert<T>;
 
-      const { data, error } = await supabase
-        .from(table)
-        .insert(dataWithUserId)
-        .select()
-        .single();
-
-      if (error) {
-        return { data: null, error: handleError(error) };
-      }
-
-      return { data, error: null };
-    } catch (error) {
-      return { data: null, error: handleError(error) };
-    }
-  }, [validateUser, handleError, user]);
+    return insert(table, userValues);
+  };
 
   return {
-    // Generic operations
     select,
-    insert: insertRecord,
-    update: updateRecord,
+    insert,
+    update,
     delete: deleteRecord,
-    insertBatch,
-    
-    // User-specific operations
     selectUserData,
-    insertUserData,
-    
-    // Utility
-    validateUser,
-    currentUser: user,
+    insertUserData
   };
 };
+
+export default useSecureDatabase;
