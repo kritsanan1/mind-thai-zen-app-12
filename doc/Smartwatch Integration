@@ -1,0 +1,66 @@
+Master Prompts for Smartwatch Integration in MindfulThai App
+Below are the consolidated English prompts for integrating the "MindfulThai" mental health app with smartwatches (Apple Watch, Samsung Galaxy Watch, Fitbit) on Lovable.dev. The integration enhances functionality with heart rate (HR) stress analysis, sleep tracking, and notifications, ensuring PDPA/GDPR compliance and alignment with the app’s calming design (soft blue #E6F0FA, mint green #D4F4E2, dark green #2E7D32 CTAs, Sarabun/Poppins fonts).
+Step 1: Smartwatch Connection Setup
+Integrate smartwatch support into the MindfulThai app on Lovable.dev, supporting Apple Watch, Samsung Galaxy Watch, and Fitbit via APIs (e.g., HealthKit for iOS, Samsung Health for Android) to access heart rate (HR) and sleep data. Add a settings screen in the Profile section for smartwatch connection, featuring a "Connect Device" button (dark green #2E7D32) and instructional text (Thai/English, Sarabun/Poppins). Design a minimal UI with a soft blue (#E6F0FA) background and button click animation (fade effect). Store device connection data securely per PDPA/GDPR.
+
+Step 2: Stress Analysis via Heart Rate
+Add a stress analysis feature to MindfulThai using HR data from smartwatches. Update the Home screen with a "Stress Level" card (mint green #D4F4E2 background) displaying stress levels (low/medium/high) and a "Start Breathing" CTA button (dark green #2E7D32) linking to a 5-minute breathing exercise in the Content section. Send a smartwatch notification for high HR (e.g., "Take a moment to breathe?") in Thai/English (Sarabun/Poppins). Include a card load animation (fade-in). Store HR data securely per PDPA/GDPR.
+
+Step 3: Sleep Tracking
+Integrate a sleep tracking feature in MindfulThai using smartwatch sleep data. Update the Profile screen with a "Sleep Summary" section showing sleep duration and quality (good/average/poor) in a bar chart (soft blue #E6F0FA bars). Add a "Pre-Bed Meditation" button (dark green #2E7D32) linking to a 10-minute sleep-themed meditation. Send a pre-bed smartwatch notification (e.g., "Ready for a bedtime meditation?") in Thai/English (Sarabun/Poppins). Include a chart load animation (slide-up). Store sleep data securely per PDPA/GDPR.
+
+Step 4: Smartwatch Notifications
+Design a smartwatch notification system for MindfulThai, supporting Apple Watch, Samsung Galaxy Watch, and Fitbit. Send motivational messages (e.g., "You’ve got this! Try a 5-minute meditation") and scheduled meditation reminders based on Profile settings. Design notification UI on smartwatches with mint green (#D4F4E2) accents and Sarabun/Poppins fonts (small size), including a "Start" button to launch meditations in the app. Add an option to disable notifications in Profile settings. Store notification data securely per PDPA/GDPR.
+
+Step 5: Smartwatch UI Design
+Create a smartwatch UI for MindfulThai on Apple Watch, Samsung Galaxy Watch, and Fitbit with three screens:
+- Home: Displays stress level (from HR) and a "Start Breathing" button (dark green #2E7D32).
+- Meditation: Lists 5/10-minute meditation options (Thai/English) with a start button.
+- Sleep: Shows sleep summary and a "Pre-Bed Meditation" button.
+Use soft blue (#E6F0FA) and mint green (#D4F4E2) colors, Sarabun/Poppins fonts (small size), and a minimal design. Include button click animations (scale 1.1x). Save the UI as a reusable component in Lovable.dev.
+
+Step 6: Testing and Prototyping
+Add smartwatch integration testing to MindfulThai on Lovable.dev. Create iOS/Android prototypes including smartwatch features (HR, sleep, notifications). Test API connectivity and notifications on Apple Watch, Samsung Galaxy Watch, and Fitbit. Update the Feedback Form screen with a "Device Feedback" section (Thai/English, Sarabun/Poppins). Update the Feedback Dashboard with a pie chart for device-related issues (mint green #D4F4E2 segments). Export prototypes as Figma-compatible files and store test data per PDPA/GDPR.
+
+Updated Folder Structure
+Integrate outputs into the existing folder structure (artifact_id: 68c3347c-3454-4316-8799-57e237b4232c):
+/MentalHealthApp_Design
+├── /Wireframes
+│   ├── Smartwatch_Connection_Wireframe_v1.sketch
+│   ├── Smartwatch_HR_Stress_Wireframe_v1.sketch
+│   ├── Smartwatch_Sleep_Wireframe_v1.sketch
+├── /Mockups
+│   ├── Smartwatch_Connection_Mockup_v1.png
+│   ├── Smartwatch_HR_Stress_Mockup_v1.png
+│   ├── Smartwatch_Sleep_Mockup_v1.png
+├── /UI_Kit
+│   ├── Smartwatch_Buttons.sketch
+│   ├── Smartwatch_Icons.sketch
+│   ├── Micro_Animations/
+│   │   ├── Smartwatch_Button_Click_Animation.gif
+├── /Integration
+│   ├── Smartwatch_API_Config.md
+│   ├── Smartwatch_Notification_Flow.sketch
+│   ├── Smartwatch_Data_Privacy.md
+├── /Prototypes
+│   ├── Smartwatch_Prototype_v1.fig
+├── /Feedback
+│   ├── Smartwatch_Feedback_Raw_Data.csv
+│   ├── Feedback_Dashboard_Smartwatch.fig
+└── README.md
+
+Folder Details
+
+/Integration: Stores API configs (e.g., HealthKit, Samsung Health), notification flows, and privacy policies.
+/Wireframes, /Mockups: Includes smartwatch UI wireframes and mockups.
+/UI_Kit: Contains smartwatch UI components.
+/Prototypes: Stores smartwatch prototypes.
+/Feedback: Includes device feedback data (CSV) and updated dashboard (Figma).
+
+Additional Notes
+
+Cultural Relevance: Notifications use polite, Thai-appropriate phrasing (e.g., "Ready for a bedtime meditation?").
+Privacy: All prompts emphasize PDPA/GDPR compliance for health data.
+Lovable.dev Assumptions: Assumes support for smartwatch APIs; adjust if unsupported.
+Memory Context: References prior UI/UX requirements. Manage chat history via Data Controls if needed.
+
