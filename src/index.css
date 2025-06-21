@@ -183,7 +183,7 @@
 }
 
 .zen-micro-hover {
-  @apply transition-all duration-200 hover:scale-102;
+  @apply transition-all duration-200 hover:scale-105;
 }
 
 .zen-fade-in {
