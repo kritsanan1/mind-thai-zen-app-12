@@ -1,0 +1,84 @@
+Master Prompts for MindfulThai App on Lovable.dev
+Below are the consolidated master prompts in English for designing and developing the "MindfulThai" mental health mobile app on Lovable.dev, targeting young adults (18-40) in Thailand. The prompts cover all steps for creating a calming, intuitive, and privacy-focused app with Thai/English support.
+Step 1: Project Setup and App Overview
+Create a new mobile app project in Lovable.dev named "MindfulThai" for young adults (18-40) in Thailand, focused on mental health with AI-powered features. Support Thai and English languages with seamless switching. Use a calming color palette: soft blue (#E6F0FA), mint green (#D4F4E2), white, and dark green (#2E7D32) for CTAs. Apply Sarabun font for Thai text and Poppins for English text, ensuring readability on iOS and Android. Enable responsive design with subtle micro-animations for button clicks and screen transitions. Prioritize privacy with PDPA (Thailand) and GDPR compliance.
+
+Step 2: Navigation Structure
+Design a bottom navigation bar for MindfulThai with five sections: Home, AI Chat, Content, Therapist, and Profile. Use SVG icons and bilingual labels (Thai/English, Sarabun/Poppins fonts). Ensure intuitive navigation with hover states (soft blue #E6F0FA) and click animations (scale 1.1x). Set Home as the default screen. Save the navigation structure for reuse across all screens.
+
+Step 3: Home Screen Design
+Design the Home screen for MindfulThai with a minimalistic layout, including:
+- A daily mood summary card (AI-generated, placeholder text) with a soft blue (#E6F0FA) background.
+- A prominent dark green (#2E7D32) CTA button labeled "Start Meditation" (Thai/English toggle).
+- A scrollable list of mental health tips in cards (mint green #D4F4E2 background, Sarabun/Poppins text).
+- A non-intrusive "Upgrade to Premium" button linking to a subscription page.
+Add micro-animations for button clicks (fade effect) and card scrolling (slide-in). Ensure responsiveness for iOS and Android.
+
+Step 4: AI Chat Feature
+Create an AI Chat screen for MindfulThai with a conversational UI, including:
+- A chat bubble interface with text/voice input (Thai/English) at the bottom.
+- Empathetic AI responses (e.g., "You seem stressed, want to try a 5-minute breathing exercise?") in Sarabun/Poppins.
+- A suggestion chip (e.g., "Try a breathing exercise") in mint green (#D4F4E2).
+- A "Save Mood" button (dark green #2E7D32) for secure data storage.
+Integrate an AI model to analyze mood from text/voice input, ensuring PDPA/GDPR-compliant storage. Add micro-animations for message sending (slide-up) and suggestion chip hover (scale 1.1x). Save the chat UI as a reusable component.
+
+Step 5: Content Section (Meditation and Articles)
+Design the Content screen for MindfulThai with a grid layout, including:
+- Guided meditations (5/10/15-minute options, themes like sleep/stress relief) with nature-themed thumbnails (e.g., forest, beach).
+- Breathing exercises with simple animations (e.g., expanding circle).
+- Mental health articles with preview cards.
+Each item includes a title (Thai/English, Sarabun/Poppins) and play/read button (dark green #2E7D32). Support Thai/English audio for meditations. Add a free vs premium toggle, with premium items marked. Include micro-animations for grid selection (fade-in) and audio playback start (pulse effect). Ensure responsive design.
+
+Step 6: Therapist Booking Feature
+Design the Therapist screen for MindfulThai with a filterable therapist list (by price, expertise). Each therapist card includes a photo, name, bio, and "Book Now" button (dark green #2E7D32). Create a scheduling modal with a calendar (Thai/English date formats) and a payment confirmation screen (showing price, date, therapist name). Highlight premium-only booking options with an "Upgrade to Premium" CTA. Add micro-animations for filter application (slide-down) and booking confirmation (checkmark fade-in). Ensure PDPA-compliant data handling.
+
+Step 7: Profile and Gamification
+Design the Profile screen for MindfulThai, including:
+- A progress bar for meditation streaks (mint green #D4F4E2 fill).
+- A badge gallery for gamification rewards (e.g., "3-Day Streak").
+- Settings for language (Thai/English toggle) and notifications.
+- An "Upgrade to Premium" button (dark green #2E7D32).
+Show encouraging messages (e.g., "3 days of meditation! Unlock premium content with 10 points!") in a popup. Add micro-animations for badge unlocks (sparkle effect) and progress bar updates (fill animation). Store user data securely with PDPA/GDPR compliance.
+
+Step 8: Feedback Form and Dashboard
+Create a Feedback Form screen for MindfulThai with a minimal UI, including:
+- A text input for comments (Thai/English, Sarabun/Poppins).
+- A 5-star rating system.
+- A submit button (dark green #2E7D32, scale 1.1x animation).
+Design a Feedback Dashboard screen with:
+- A bar chart for satisfaction scores (1-5 stars, soft blue #E6F0FA bars).
+- A pie chart for common issues (e.g., UI issues, mint green #D4F4E2 segments).
+Store feedback data securely (PDPA/GDPR-compliant). Add micro-animations for chart loading (fade-in) and form submission (toast: "Feedback submitted!").
+
+Step 9: Privacy Consent Screen
+Design a Privacy Consent screen for MindfulThai, shown on first launch, including:
+- Clear text (Thai/English, Sarabun/Poppins) explaining data usage (AI mood analysis, therapist bookings).
+- A PDPA/GDPR consent checkbox.
+- An "Agree" button (dark green #2E7D32, fade animation).
+Ensure the screen is non-intrusive and skippable after consent. Store consent data securely.
+
+Step 10: Usability Testing and A/B Testing
+Configure A/B testing in Lovable.dev for MindfulThai with two scenarios:
+1. Test Home screen CTA button text: "Start Now" vs "Try Meditation". Measure click-through rate.
+2. Test Home screen background colors: soft blue (#E6F0FA) vs mint green (#D4F4E2). Measure engagement (time spent, session length).
+Create a testing plan for 50 young adults (18-40) in Thailand via remote prototype links. Collect feedback via the in-app Feedback Form. Display results in the Feedback Dashboard with visualizations (bar chart for click-through rates, line chart for engagement metrics).
+
+Step 11: Prototyping and Final Integration
+Generate interactive iOS and Android prototypes for MindfulThai in Lovable.dev, including all screens (Home, AI Chat, Content, Therapist, Profile, Feedback Form, Feedback Dashboard, Privacy Consent). Link navigation, interactions, and micro-animations. Ensure Thai/English text (Sarabun/Poppins) displays correctly. Export prototypes as Figma-compatible files and generate a production-ready app bundle for iOS and Android, optimized for responsive design and PDPA/GDPR compliance.
+
+Integration with Folder Structure
+Export Lovable.dev outputs to the following folder structure:
+
+/Wireframes: Store wireframes (e.g., Home_Screen_Wireframe_v1.sketch).
+/Mockups: Store high-fidelity mockups (e.g., AI_Chat_Mockup_v1.png).
+/UI_Kit: Store UI components (buttons, icons, animations).
+/Prototypes: Store iOS/Android prototypes (e.g., iOS_Prototype_v1.fig).
+/Feedback: Store feedback data (CSV) and dashboard (Figma).
+
+Additional Notes
+
+Cultural Relevance: Include Buddhist mindfulness themes (e.g., Anapanasati breathing) and Thai nature visuals.
+Privacy: Ensure PDPA/GDPR compliance in all prompts, especially for AI and booking data.
+Lovable.dev Assumptions: Adjust prompts if Lovable.dev lacks features (e.g., voice input, charts).
+Memory Context: Prompts reference prior UI/UX requirements. Manage chat history via Data Controls if needed.
+
