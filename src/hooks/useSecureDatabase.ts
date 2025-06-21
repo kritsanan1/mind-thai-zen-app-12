@@ -5,12 +5,13 @@ import { Database } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
 type Tables = Database['public']['Tables'];
+type TableName = keyof Tables;
 
 export const useSecureDatabase = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const secureQuery = async <T extends keyof Tables>(
+  const secureQuery = async <T extends TableName>(
     tableName: T,
     options?: {
       select?: string;
@@ -58,7 +59,7 @@ export const useSecureDatabase = () => {
     }
   };
 
-  const secureInsert = async <T extends keyof Tables>(
+  const secureInsert = async <T extends TableName>(
     tableName: T,
     data: Tables[T]['Insert']
   ) => {
@@ -68,7 +69,7 @@ export const useSecureDatabase = () => {
     try {
       const { data: insertedData, error: insertError } = await supabase
         .from(tableName)
-        .insert(data)
+        .insert(data as any)
         .select()
         .single();
 
@@ -88,7 +89,7 @@ export const useSecureDatabase = () => {
     }
   };
 
-  const secureUpdate = async <T extends keyof Tables>(
+  const secureUpdate = async <T extends TableName>(
     tableName: T,
     id: string,
     updates: Tables[T]['Update']
@@ -99,7 +100,7 @@ export const useSecureDatabase = () => {
     try {
       const { data: updatedData, error: updateError } = await supabase
         .from(tableName)
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();
