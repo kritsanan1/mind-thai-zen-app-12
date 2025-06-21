@@ -1,147 +1,135 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSecureAuth } from '@/hooks/useSecureAuth';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { Mail, Lock, User, Eye, EyeOff, Sparkles } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Lotus, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Auth = () => {
-  const { language } = useLanguage();
-  const { signIn, signUp, loading } = useAuth();
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const { secureSignIn, secureSignUp, isLoading } = useSecureAuth();
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   
   const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    fullName: ''
-  });
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
+  // Real-time password validation
+  useEffect(() => {
+    if (password && isSignUp) {
+      const errors: string[] = [];
+      if (password.length < 8) errors.push('At least 8 characters');
+      if (!/[A-Z]/.test(password)) errors.push('One uppercase letter');
+      if (!/[a-z]/.test(password)) errors.push('One lowercase letter');
+      if (!/[0-9]/.test(password)) errors.push('One number');
+      if (!/[^A-Za-z0-9]/.test(password)) errors.push('One special character');
+      setValidationErrors(errors);
+    } else {
+      setValidationErrors([]);
+    }
+  }, [password, isSignUp]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (isSignUp) {
-      if (formData.password !== formData.confirmPassword) {
-        toast({
-          title: language === 'th' ? 'รหัสผ่านไม่ตรงกัน' : 'Passwords don\'t match',
-          description: language === 'th' ? 'กรุณาตรวจสอบรหัสผ่านอีกครั้ง' : 'Please check your passwords again',
-          variant: 'destructive'
-        });
-        return;
-      }
+    if (!email || !password) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
 
-      if (formData.password.length < 6) {
-        toast({
-          title: language === 'th' ? 'รหัสผ่านสั้นเกินไป' : 'Password too short',
-          description: language === 'th' ? 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร' : 'Password must be at least 6 characters',
-          variant: 'destructive'
-        });
-        return;
-      }
+    if (isSignUp && validationErrors.length > 0) {
+      toast.error('Please fix password requirements');
+      return;
+    }
 
-      try {
-        const { error } = await signUp(formData.email, formData.password);
-        if (error) {
-          throw error;
-        }
-        
-        toast({
-          title: language === 'th' ? 'สมัครสมาชิกสำเร็จ' : 'Registration successful',
-          description: language === 'th' ? 'กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี' : 'Please check your email to verify your account'
-        });
-        
-        setIsSignUp(false);
-      } catch (error: any) {
-        toast({
-          title: language === 'th' ? 'เกิดข้อผิดพลาด' : 'Registration failed',
-          description: error.message || (language === 'th' ? 'กรุณาลองใหม่อีกครั้ง' : 'Please try again'),
-          variant: 'destructive'
-        });
+    try {
+      if (isSignUp) {
+        await secureSignUp(email, password, fullName);
+        toast.success('Registration successful! Please check your email to confirm your account.');
+      } else {
+        await secureSignIn(email, password);
+        navigate('/', { replace: true });
       }
-    } else {
-      try {
-        const { error } = await signIn(formData.email, formData.password);
-        if (error) {
-          throw error;
-        }
-        
-        toast({
-          title: language === 'th' ? 'เข้าสู่ระบบสำเร็จ' : 'Login successful',
-          description: language === 'th' ? 'ยินดีต้อนรับกลับมา' : 'Welcome back'
-        });
-        
-        navigate('/app');
-      } catch (error: any) {
-        toast({
-          title: language === 'th' ? 'เข้าสู่ระบบไม่สำเร็จ' : 'Login failed',
-          description: error.message || (language === 'th' ? 'กรุณาตรวจสอบอีเมลและรหัสผ่าน' : 'Please check your email and password'),
-          variant: 'destructive'
-        });
-      }
+    } catch (error) {
+      // Error is already handled in useSecureAuth
+      console.error('Auth error:', error);
     }
   };
 
+  if (user) {
+    return null; // Will redirect above
+  }
+
   return (
-    <div className="min-h-screen thai-gradient flex items-center justify-center p-6">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="lotus-glow w-16 h-16 mx-auto mb-6 meditation-float">
-            <div className="w-8 h-8 bg-gradient-to-br from-zen-lotus to-purple-300 rounded-full mx-auto lotus-bloom flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-zen-pearl via-zen-mist to-zen-lotus flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="lotus-glow w-16 h-16 mx-auto mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-zen-blue to-zen-sage rounded-full mx-auto flex items-center justify-center">
+              <Lotus className="w-6 h-6 text-white" />
             </div>
           </div>
-          
-          <h1 className="text-2xl font-bold text-gray-800 mb-2 font-thai">
-            {isSignUp 
-              ? (language === 'th' ? 'สมัครสมาชิก' : 'Sign Up')
-              : (language === 'th' ? 'เข้าสู่ระบบ' : 'Sign In')
-            }
+          <h1 className="text-2xl font-bold text-gray-800 font-thai mb-2">
+            {language === 'th' ? 'มายด์ฟูล ไทย' : 'MindfulThai'}
           </h1>
-          
-          <p className="text-gray-600 font-thai">
-            {isSignUp 
-              ? (language === 'th' ? 'เริ่มต้นการเดินทางสู่ความสงบใจ' : 'Begin your journey to inner peace')
-              : (language === 'th' ? 'ยินดีต้อนรับกลับมา' : 'Welcome back')
-            }
+          <p className="text-gray-600 font-thai text-sm">
+            {language === 'th' ? 'แอปดูแลสุขภาพจิตด้วย AI' : 'AI-Powered Mental Health App'}
           </p>
         </div>
 
-        {/* Form */}
         <Card className="zen-card border-0">
-          <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardHeader className="space-y-4">
+            <div className="text-center">
+              <CardTitle className="text-xl font-semibold text-gray-800 font-thai">
+                {isSignUp 
+                  ? (language === 'th' ? 'สร้างบัญชี' : 'Create Account')
+                  : (language === 'th' ? 'เข้าสู่ระบบ' : 'Sign In')
+                }
+              </CardTitle>
+              <CardDescription className="font-thai">
+                {isSignUp
+                  ? (language === 'th' ? 'เริ่มต้นการดูแลสุขภาพจิตของคุณ' : 'Start your mental wellness journey')
+                  : (language === 'th' ? 'ยินดีต้อนรับกลับมา' : 'Welcome back')
+                }
+              </CardDescription>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <div className="space-y-2">
                   <Label htmlFor="fullName" className="font-thai">
                     {language === 'th' ? 'ชื่อ-นามสกุล' : 'Full Name'}
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="fullName"
-                      name="fullName"
                       type="text"
-                      required={isSignUp}
-                      className="zen-input pl-10"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-10 font-thai"
                       placeholder={language === 'th' ? 'กรอกชื่อ-นามสกุล' : 'Enter your full name'}
-                      value={formData.fullName}
-                      onChange={handleInputChange}
                     />
                   </div>
                 </div>
@@ -152,16 +140,15 @@ const Auth = () => {
                   {language === 'th' ? 'อีเมล' : 'Email'}
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
-                    name="email"
                     type="email"
-                    required
-                    className="zen-input pl-10"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
                     placeholder={language === 'th' ? 'กรอกอีเมล' : 'Enter your email'}
-                    value={formData.email}
-                    onChange={handleInputChange}
+                    required
                   />
                 </div>
               </div>
@@ -171,93 +158,69 @@ const Auth = () => {
                   {language === 'th' ? 'รหัสผ่าน' : 'Password'}
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
-                    name="password"
                     type={showPassword ? 'text' : 'password'}
-                    required
-                    className="zen-input pl-10 pr-10"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10"
                     placeholder={language === 'th' ? 'กรอกรหัสผ่าน' : 'Enter your password'}
-                    value={formData.password}
-                    onChange={handleInputChange}
+                    required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-3 h-4 w-4 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
+                
+                {/* Password requirements for signup */}
+                {isSignUp && password && validationErrors.length > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                    <p className="text-sm font-medium text-red-800 mb-2 font-thai">
+                      {language === 'th' ? 'รหัสผ่านต้องมี:' : 'Password must have:'}
+                    </p>
+                    <ul className="text-xs text-red-700 space-y-1">
+                      {validationErrors.map((error, index) => (
+                        <li key={index}>• {error}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
-              {isSignUp && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="font-thai">
-                    {language === 'th' ? 'ยืนยันรหัสผ่าน' : 'Confirm Password'}
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <Input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      required={isSignUp}
-                      className="zen-input pl-10"
-                      placeholder={language === 'th' ? 'ยืนยันรหัสผ่าน' : 'Confirm your password'}
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <Button 
-                type="submit" 
-                className="zen-button w-full"
-                disabled={loading}
+              <Button
+                type="submit"
+                className="w-full zen-button"
+                disabled={isLoading || (isSignUp && validationErrors.length > 0)}
               >
-                {loading 
-                  ? (language === 'th' ? 'กำลังดำเนินการ...' : 'Processing...')
+                {isLoading 
+                  ? (language === 'th' ? 'กำลังดำเนินการ...' : 'Processing...') 
                   : isSignUp 
-                    ? (language === 'th' ? 'สมัครสมาชิก' : 'Sign Up')
+                    ? (language === 'th' ? 'สร้างบัญชี' : 'Create Account')
                     : (language === 'th' ? 'เข้าสู่ระบบ' : 'Sign In')
                 }
               </Button>
             </form>
 
-            {/* Toggle Sign Up/In */}
-            <div className="mt-6 text-center">
-              <p className="text-gray-600 font-thai">
-                {isSignUp 
-                  ? (language === 'th' ? 'มีบัญชีแล้ว?' : 'Already have an account?')
-                  : (language === 'th' ? 'ยังไม่มีบัญชี?' : 'Don\'t have an account?')
+            <Separator className="my-6" />
+
+            <div className="text-center">
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-sm text-zen-blue hover:text-zen-sage font-thai transition-colors"
+              >
+                {isSignUp
+                  ? (language === 'th' ? 'มีบัญชีแล้ว? เข้าสู่ระบบ' : 'Already have an account? Sign In')
+                  : (language === 'th' ? 'ยังไม่มีบัญชี? สร้างบัญชี' : "Don't have an account? Create Account")
                 }
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(!isSignUp)}
-                  className="ml-2 text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  {isSignUp 
-                    ? (language === 'th' ? 'เข้าสู่ระบบ' : 'Sign In')
-                    : (language === 'th' ? 'สมัครสมาชิก' : 'Sign Up')
-                  }
-                </button>
-              </p>
+              </button>
             </div>
           </CardContent>
         </Card>
-
-        {/* Back to Home */}
-        <div className="text-center">
-          <button
-            onClick={() => navigate('/')}
-            className="text-gray-600 hover:text-gray-800 font-thai"
-          >
-            {language === 'th' ? '← กลับหน้าหลัก' : '← Back to Home'}
-          </button>
-        </div>
       </div>
     </div>
   );
