@@ -38,13 +38,16 @@
 
     --radius: 1rem;
 
-    /* Thai Zen Color Palette */
+    /* Enhanced Thai Zen Color Palette */
     --zen-blue: #E6F0FA;
     --zen-mint: #D4F4E2;
     --zen-green: #2E7D32;
     --zen-lotus: #F8BBD9;
     --zen-gold: #FFD700;
     --zen-warm: #FFF8E1;
+    --zen-pearl: #F8F9FA;
+    --zen-sage: #A8DADC;
+    --zen-mist: #E8F4F8;
   }
 
   .dark {
@@ -77,39 +80,50 @@
 
   body {
     @apply bg-background text-foreground font-thai;
-    background: linear-gradient(135deg, #E6F0FA 0%, #D4F4E2 100%);
+    background: linear-gradient(135deg, #E6F0FA 0%, #D4F4E2 50%, #F8F9FA 100%);
     min-height: 100vh;
   }
 
   .font-thai {
     font-family: 'Sarabun', 'Poppins', sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
   }
 
   .font-english {
     font-family: 'Poppins', 'Sarabun', sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1;
+  }
+
+  html[lang="th"] {
+    font-family: 'Sarabun', 'Poppins', sans-serif;
+  }
+
+  html[lang="en"] {
+    font-family: 'Poppins', 'Sarabun', sans-serif;
   }
 }
 
-/* Thai Zen UI Components */
+/* Enhanced Thai Zen UI Components */
 @layer components {
   .zen-card {
-    @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20;
+    @apply bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 transition-all duration-300;
   }
 
   .zen-button {
-    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-6 py-3 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg;
+    @apply bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl px-6 py-3 font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg;
   }
 
   .zen-button-secondary {
-    @apply bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl px-6 py-3 font-medium transition-all duration-300 transform hover:scale-105 shadow-lg;
+    @apply bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-2xl px-6 py-3 font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg;
   }
 
   .zen-input {
-    @apply bg-white/60 backdrop-blur-sm border border-white/30 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300;
+    @apply bg-white/60 backdrop-blur-sm border border-white/30 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 font-thai;
   }
 
   .lotus-glow {
     @apply bg-gradient-to-br from-pink-100 to-purple-100 rounded-full p-4 shadow-lg;
+    box-shadow: 0 0 20px rgba(248, 187, 217, 0.3);
   }
 
   .meditation-float {
@@ -117,10 +131,23 @@
   }
 
   .thai-gradient {
-    background: linear-gradient(135deg, #E6F0FA 0%, #D4F4E2 50%, #FFF8E1 100%);
+    background: linear-gradient(135deg, #E6F0FA 0%, #D4F4E2 30%, #F8F9FA 60%, #FFF8E1 100%);
+  }
+
+  .zen-text-gradient {
+    @apply bg-gradient-to-r from-zen-green to-zen-sage bg-clip-text text-transparent;
+  }
+
+  .zen-hover-lift {
+    @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+  }
+
+  .zen-glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
   }
 }
 
+/* Enhanced Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-20px); }
@@ -132,8 +159,40 @@
   100% { transform: scale(1) rotate(360deg); opacity: 0.9; }
 }
 
+@keyframes zen-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+@keyframes breathing {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
 .lotus-bloom {
   animation: lotus-bloom 8s ease-in-out infinite;
+}
+
+.breathing-animation {
+  animation: breathing 4s ease-in-out infinite;
+}
+
+/* Micro-animations for enhanced UX */
+.zen-micro-click {
+  @apply transition-transform duration-150 active:scale-95;
+}
+
+.zen-micro-hover {
+  @apply transition-all duration-200 hover:scale-102;
+}
+
+.zen-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Mobile-first responsive design */
@@ -145,4 +204,37 @@
   .mobile-text {
     @apply text-sm;
   }
+
+  .zen-card {
+    @apply mx-2;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .zen-card {
+    @apply border-2 border-gray-400;
+  }
+  
+  .zen-button {
+    @apply border-2 border-blue-600;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .meditation-float,
+  .lotus-bloom,
+  .breathing-animation {
+    animation: none;
+  }
+  
+  .zen-hover-lift {
+    @apply hover:transform-none;
+  }
+}
+
+/* Focus styles for accessibility */
+.zen-focus {
+  @apply focus:outline-none focus:ring-2 focus:ring-zen-green focus:ring-offset-2;
 }
