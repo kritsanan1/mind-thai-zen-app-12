@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
@@ -12,12 +13,14 @@ import NotFound from '@/pages/NotFound';
 import Privacy from '@/pages/Privacy';
 import Layout from '@/components/Layout';
 import { Toaster } from 'sonner';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProtectedRoute } from '@/components/security/ProtectedRoute';
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <LanguageProvider>
           <BrowserRouter>
@@ -26,16 +29,11 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/privacy" element={<Privacy />} />
               
-              {/* Protected routes */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Index />
-                  </Layout>
-                </ProtectedRoute>
-              } />
+              {/* Landing page */}
+              <Route path="/" element={<Index />} />
               
-              <Route path="/home" element={
+              {/* Protected app routes */}
+              <Route path="/app/home" element={
                 <ProtectedRoute>
                   <Layout>
                     <Home />
@@ -43,7 +41,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/ai-chat" element={
+              <Route path="/app/chat" element={
                 <ProtectedRoute>
                   <Layout>
                     <AiChat />
@@ -51,7 +49,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/content" element={
+              <Route path="/app/content" element={
                 <ProtectedRoute>
                   <Layout>
                     <Content />
@@ -59,7 +57,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/therapist" element={
+              <Route path="/app/therapist" element={
                 <ProtectedRoute>
                   <Layout>
                     <Therapist />
@@ -67,7 +65,7 @@ function App() {
                 </ProtectedRoute>
               } />
               
-              <Route path="/profile" element={
+              <Route path="/app/profile" element={
                 <ProtectedRoute>
                   <Layout>
                     <Profile />
@@ -81,7 +79,7 @@ function App() {
           <Toaster />
         </LanguageProvider>
       </AuthProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 

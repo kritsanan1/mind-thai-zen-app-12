@@ -1,272 +1,178 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Play, Clock, Star, BookOpen, Wind } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { MeditationCard } from '@/components/content/MeditationCard';
+import { Search, Filter } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-
-interface MeditationContent {
-  id: string;
-  title: string;
-  description: string;
-  duration: number;
-  type: 'meditation' | 'breathing' | 'article';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  isPremium: boolean;
-  thumbnail: string;
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Content = () => {
-  const { t, language } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'meditation' | 'breathing' | 'articles'>('meditation');
+  const { language, t } = useLanguage();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const meditationContent: MeditationContent[] = [
+  const meditationSessions = [
     {
       id: '1',
-      title: language === 'th' ? 'การนั่งสมาธิเบื้องต้น' : 'Basic Mindfulness',
-      description: language === 'th' ? 'เรียนรู้พื้นฐานการนั่งสมาธิแบบไทย' : 'Learn basic Thai meditation techniques',
+      title: language === 'th' ? 'การนั่งสมาธิเพื่อความสงบ' : 'Mindful Peace Meditation',
       duration: 5,
-      type: 'meditation',
-      difficulty: 'beginner',
+      theme: language === 'th' ? 'ความสงบ' : 'Peace',
+      thumbnail: '',
       isPremium: false,
-      thumbnail: '🧘‍♀️'
+      rating: 4.8,
+      description: language === 'th' 
+        ? 'การนั่งสมาธิที่ช่วยให้จิตใจสงบและผ่อนคลาย'
+        : 'A gentle meditation to calm your mind and relax your body'
     },
     {
       id: '2',
-      title: language === 'th' ? 'การสำรวจกาย' : 'Body Scan',
-      description: language === 'th' ? 'ผ่อนคลายร่างกายและจิตใจ' : 'Relax your body and mind',
+      title: language === 'th' ? 'เทคนิคการหายใจลึก' : 'Deep Breathing Technique',
       duration: 10,
-      type: 'meditation',
-      difficulty: 'beginner',
+      theme: language === 'th' ? 'การหายใจ' : 'Breathing',
+      thumbnail: '',
       isPremium: false,
-      thumbnail: '✨'
+      rating: 4.9,
+      description: language === 'th'
+        ? 'แบบฝึกหายใจที่ช่วยลดความเครียดและความวิตกกังวล'
+        : 'Breathing exercises to reduce stress and anxiety'
     },
     {
       id: '3',
-      title: language === 'th' ? 'สมาธิก่อนนอน' : 'Sleep Meditation',
-      description: language === 'th' ? 'ช่วยให้หลับลึกและพักผ่อนดี' : 'Deep sleep and better rest',
+      title: language === 'th' ? 'การนั่งสมาธิก่อนนอน' : 'Sleep Meditation',
       duration: 15,
-      type: 'meditation',
-      difficulty: 'intermediate',
+      theme: language === 'th' ? 'การนอน' : 'Sleep',
+      thumbnail: '',
       isPremium: true,
-      thumbnail: '🌙'
+      rating: 4.7,
+      description: language === 'th'
+        ? 'การนั่งสมาธิที่ช่วยให้หลับลึกและพักผ่อนได้ดี'
+        : 'Guided meditation for better sleep and deep rest'
     },
     {
       id: '4',
-      title: language === 'th' ? 'การหายใจ 4-7-8' : '4-7-8 Breathing',
-      description: language === 'th' ? 'เทคนิคการหายใจลดความเครียด' : 'Stress-relief breathing technique',
-      duration: 5,
-      type: 'breathing',
-      difficulty: 'beginner',
-      isPremium: false,
-      thumbnail: '💨'
-    },
+      title: language === 'th' ? 'อานาปานสติ' : 'Anapanasati Meditation',
+      duration: 20,
+      theme: language === 'th' ? 'พุทธศาสน์' : 'Buddhist',
+      thumbnail: '',
+      isPremium: true,
+      rating: 4.9,
+      description: language === 'th'
+        ? 'การสังเกตลมหายใจตามแบบพุทธศาสตร์'
+        : 'Traditional Buddhist breathing meditation practice'
+    }
+  ];
+
+  const breathingExercises = [
     {
       id: '5',
-      title: language === 'th' ? 'การหายใจแบบพุทธ' : 'Buddhist Breathing',
-      description: language === 'th' ? 'การหายใจตามแนวพุทธศาสนา' : 'Traditional Buddhist breathing',
+      title: language === 'th' ? 'หายใจ 4-7-8' : '4-7-8 Breathing',
+      duration: 5,
+      theme: language === 'th' ? 'เทคนิค' : 'Technique',
+      thumbnail: '',
+      isPremium: false,
+      rating: 4.6,
+      description: language === 'th'
+        ? 'เทคนิคการหายใจที่ช่วยให้หลับเร็วขึ้น'
+        : 'Breathing technique to help you fall asleep faster'
+    },
+    {
+      id: '6',
+      title: language === 'th' ? 'การหายใจแบบกล่อง' : 'Box Breathing',
       duration: 8,
-      type: 'breathing',
-      difficulty: 'intermediate',
-      isPremium: true,
-      thumbnail: '🙏'
+      theme: language === 'th' ? 'ความเข้มข้น' : 'Focus',
+      thumbnail: '',
+      isPremium: false,
+      rating: 4.5,
+      description: language === 'th'
+        ? 'การหายใจที่ช่วยเพิ่มสมาธิและความมั่นคง'
+        : 'Structured breathing for focus and stability'
     }
   ];
 
   const articles = [
     {
-      id: '1',
-      title: language === 'th' ? 'ความเครียดในยุคดิจิทัล' : 'Digital Age Stress',
-      description: language === 'th' ? 'วิธีจัดการความเครียดจากเทคโนโลยี' : 'Managing technology-related stress',
-      readTime: 5,
-      isPremium: false
-    },
-    {
-      id: '2',
-      title: language === 'th' ? 'การนอนหลับที่ดี' : 'Better Sleep Habits',
-      description: language === 'th' ? 'สร้างนิสัยการนอนหลับที่ดีต่อสุขภาพจิต' : 'Building healthy sleep habits for mental wellness',
-      readTime: 7,
-      isPremium: false
+      id: '7',
+      title: language === 'th' ? 'ความสำคัญของสุขภาพจิต' : 'Importance of Mental Health',
+      duration: 3,
+      theme: language === 'th' ? 'บทความ' : 'Article',
+      thumbnail: '',
+      isPremium: false,
+      rating: 4.4,
+      description: language === 'th'
+        ? 'เข้าใจความสำคัญของการดูแลสุขภาพจิตในยุคปัจจุบัน'
+        : 'Understanding the importance of mental health in modern times'
     }
   ];
-
-  const filteredContent = meditationContent.filter(item => {
-    if (activeTab === 'meditation') return item.type === 'meditation';
-    if (activeTab === 'breathing') return item.type === 'breathing';
-    return false;
-  });
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getDifficultyText = (difficulty: string) => {
-    if (language === 'th') {
-      switch (difficulty) {
-        case 'beginner': return 'เริ่มต้น';
-        case 'intermediate': return 'กลาง';
-        case 'advanced': return 'สูง';
-        default: return difficulty;
-      }
-    }
-    return difficulty;
-  };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="text-center">
-        <div className="lotus-glow w-12 h-12 mx-auto mb-3">
-          <BookOpen className="w-6 h-6 text-zen-green mx-auto" />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-800 font-thai">
-          {language === 'th' ? 'เนื้อหาเพื่อสุขภาพจิต' : 'Wellness Content'}
+        <h1 className="text-2xl font-bold text-gray-800 font-thai mb-2">
+          {t('content.meditation')} & {t('content.articles')}
         </h1>
         <p className="text-gray-600 font-thai">
-          {language === 'th' ? 'สมาธิ การหายใจ และบทความดีๆ' : 'Meditation, breathing, and wellness articles'}
+          {language === 'th' 
+            ? 'เนื้อหาที่จะช่วยดูแลสุขภาพจิตของคุณ'
+            : 'Content to nurture your mental wellness'
+          }
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="zen-card p-2 flex rounded-2xl">
-        <button
-          onClick={() => setActiveTab('meditation')}
-          className={`flex-1 py-3 px-4 rounded-xl font-medium font-thai text-sm transition-all ${
-            activeTab === 'meditation'
-              ? 'bg-blue-500 text-white shadow-lg'
-              : 'text-gray-600 hover:text-blue-500'
-          }`}
-        >
-          {t('content.meditation')}
-        </button>
-        <button
-          onClick={() => setActiveTab('breathing')}
-          className={`flex-1 py-3 px-4 rounded-xl font-medium font-thai text-sm transition-all ${
-            activeTab === 'breathing'
-              ? 'bg-blue-500 text-white shadow-lg'
-              : 'text-gray-600 hover:text-blue-500'
-          }`}
-        >
-          {t('content.breathing')}
-        </button>
-        <button
-          onClick={() => setActiveTab('articles')}
-          className={`flex-1 py-3 px-4 rounded-xl font-medium font-thai text-sm transition-all ${
-            activeTab === 'articles'
-              ? 'bg-blue-500 text-white shadow-lg'
-              : 'text-gray-600 hover:text-blue-500'
-          }`}
-        >
-          {t('content.articles')}
-        </button>
+      {/* Search & Filter */}
+      <div className="flex space-x-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Input
+            placeholder={language === 'th' ? 'ค้นหาเนื้อหา...' : 'Search content...'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 font-thai"
+          />
+        </div>
+        <Button variant="outline" size="icon">
+          <Filter className="w-4 h-4" />
+        </Button>
       </div>
 
-      {/* Content Grid */}
-      {activeTab !== 'articles' ? (
-        <div className="space-y-4">
-          {filteredContent.map((item) => (
-            <Card key={item.id} className="zen-card border-0 hover:scale-102 transition-transform">
-              <CardContent className="p-6">
-                <div className="flex items-start space-x-4">
-                  <div className="text-4xl">{item.thumbnail}</div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-800 font-thai">
-                        {item.title}
-                      </h3>
-                      {item.isPremium && (
-                        <Badge className="bg-zen-gold text-white text-xs">
-                          Premium
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 font-thai mb-3">
-                      {item.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-4 h-4" />
-                          <span className="font-thai">{item.duration} {t('content.minutes')}</span>
-                        </div>
-                        <Badge className={getDifficultyColor(item.difficulty)}>
-                          {getDifficultyText(item.difficulty)}
-                        </Badge>
-                      </div>
-                      <Button 
-                        className="zen-button text-sm px-4 py-2"
-                        disabled={item.isPremium}
-                      >
-                        <Play className="w-4 h-4 mr-1" />
-                        {t('content.start')}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {articles.map((article) => (
-            <Card key={article.id} className="zen-card border-0 hover:scale-102 transition-transform">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-gray-800 font-thai">
-                    {article.title}
-                  </h3>
-                  {article.isPremium && (
-                    <Badge className="bg-zen-gold text-white text-xs">
-                      Premium
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-sm text-gray-600 font-thai mb-4">
-                  {article.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-1 text-sm text-gray-500">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-thai">{article.readTime} {language === 'th' ? 'นาที' : 'min read'}</span>
-                  </div>
-                  <Button className="zen-button text-sm px-4 py-2">
-                    <BookOpen className="w-4 h-4 mr-1" />
-                    {language === 'th' ? 'อ่าน' : 'Read'}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+      {/* Content Tabs */}
+      <Tabs defaultValue="meditation" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="meditation" className="font-thai">
+            {t('content.meditation')}
+          </TabsTrigger>
+          <TabsTrigger value="breathing" className="font-thai">
+            {t('content.breathing')}
+          </TabsTrigger>
+          <TabsTrigger value="articles" className="font-thai">
+            {t('content.articles')}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Premium Upgrade Prompt */}
-      <Card className="zen-card border-0 bg-gradient-to-r from-zen-gold/20 to-zen-lotus/20">
-        <CardContent className="p-6 text-center">
-          <div className="w-12 h-12 bg-zen-gold rounded-full mx-auto mb-3 flex items-center justify-center">
-            <Star className="w-6 h-6 text-white" />
+        <TabsContent value="meditation" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {meditationSessions.map((session) => (
+              <MeditationCard key={session.id} {...session} />
+            ))}
           </div>
-          <h3 className="font-semibold text-gray-800 mb-2 font-thai">
-            {language === 'th' ? 'ปลดล็อกเนื้อหาพิเศษ' : 'Unlock Premium Content'}
-          </h3>
-          <p className="text-sm text-gray-600 font-thai mb-4">
-            {language === 'th' 
-              ? 'เข้าถึงการนั่งสมาธิและบทความสำหรับสมาชิกพรีเมียมเท่านั้น'
-              : 'Access exclusive meditations and articles for premium members'
-            }
-          </p>
-          <Button className="zen-button text-sm px-6 py-2">
-            {language === 'th' ? 'อัปเกรดตอนนี้' : 'Upgrade Now'}
-          </Button>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="breathing" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {breathingExercises.map((exercise) => (
+              <MeditationCard key={exercise.id} {...exercise} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="articles" className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            {articles.map((article) => (
+              <MeditationCard key={article.id} {...article} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

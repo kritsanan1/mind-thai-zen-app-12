@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Sparkles, Target, Gift, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Sparkles, Target, Gift, TrendingUp, MessageCircle, Book } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -64,12 +65,16 @@ const Home = () => {
               }
             </p>
           </div>
-          <Button className="zen-button w-full mb-3">
-            {t('home.mood_check')}
-          </Button>
-          <Button className="zen-button-secondary w-full">
-            {t('home.start_meditation')}
-          </Button>
+          <Link to="/app/chat">
+            <Button className="zen-button w-full mb-3">
+              {t('home.mood_check')}
+            </Button>
+          </Link>
+          <Link to="/app/content">
+            <Button className="zen-button-secondary w-full">
+              {t('home.start_meditation')}
+            </Button>
+          </Link>
         </CardContent>
       </Card>
 
@@ -114,27 +119,31 @@ const Home = () => {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="zen-card border-0 cursor-pointer hover:scale-105 transition-transform">
-          <CardContent className="p-4 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full mx-auto mb-3 flex items-center justify-center">
-              <span className="text-xl">🧘‍♀️</span>
-            </div>
-            <p className="font-medium text-gray-800 font-thai text-sm">
-              {language === 'th' ? 'นั่งสมาธิ' : 'Meditate'}
-            </p>
-          </CardContent>
-        </Card>
+        <Link to="/app/content">
+          <Card className="zen-card border-0 cursor-pointer hover:scale-105 transition-transform">
+            <CardContent className="p-4 text-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <span className="text-xl">🧘‍♀️</span>
+              </div>
+              <p className="font-medium text-gray-800 font-thai text-sm">
+                {language === 'th' ? 'นั่งสมาธิ' : 'Meditate'}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card className="zen-card border-0 cursor-pointer hover:scale-105 transition-transform">
-          <CardContent className="p-4 text-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full mx-auto mb-3 flex items-center justify-center">
-              <span className="text-xl">💬</span>
-            </div>
-            <p className="font-medium text-gray-800 font-thai text-sm">
-              {language === 'th' ? 'แชท AI' : 'AI Chat'}
-            </p>
-          </CardContent>
-        </Card>
+        <Link to="/app/chat">
+          <Card className="zen-card border-0 cursor-pointer hover:scale-105 transition-transform">
+            <CardContent className="p-4 text-center">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full mx-auto mb-3 flex items-center justify-center">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <p className="font-medium text-gray-800 font-thai text-sm">
+                {language === 'th' ? 'แชท AI' : 'AI Chat'}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Premium Upgrade Prompt */}

@@ -51,7 +51,7 @@ const Index = () => {
           </p>
 
           <div className="space-y-4 mb-12">
-            <Link to="/app" className="block">
+            <Link to="/app/home" className="block">
               <button className="w-full zen-button py-4 text-lg font-semibold">
                 {language === 'th' ? 'เริ่มต้นการเดินทางสู่ความสงบ' : 'Begin Your Journey to Peace'}
               </button>
@@ -94,7 +94,7 @@ const Index = () => {
               </h3>
               <p className="text-gray-600 text-sm font-thai">
                 {language === 'th' 
-                  ? 'เทคนิคการนั่งสมาধิที่ผสมผสานปรัชญาพุทธกับวิทยาศาสตร์สมัยใหม่'
+                  ? 'เทคนิคการนั่งสมาธิที่ผสมผสานปรัชญาพุทธกับวิทยาศาสตร์สมัยใหม่'
                   : 'Meditation techniques blending Buddhist philosophy with modern science'
                 }
               </p>
